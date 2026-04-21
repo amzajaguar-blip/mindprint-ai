@@ -1,0 +1,15 @@
+export const ENV = {
+  appId: process.env.VITE_APP_ID ?? "",
+  cookieSecret: process.env.JWT_SECRET ?? "",
+  databaseUrl: process.env.DATABASE_URL ?? "",
+  oAuthServerUrl: process.env.OAUTH_SERVER_URL ?? "",
+  ownerOpenId: process.env.OWNER_OPEN_ID ?? "",
+  isProduction: process.env.NODE_ENV === "production",
+  forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
+  forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
+  appUrl: process.env.APP_URL ?? "http://localhost:3000",
+  lemonsqueezyApiKey: process.env.LEMONSQUEEZY_API_KEY ?? "",
+  lemonsqueezyStoreId: process.env.LEMONSQUEEZY_STORE_ID ?? "",
+  lemonsqueezyVariantId: process.env.LEMONSQUEEZY_VARIANT_ID ?? "",
+  lemonsqueezyWebhookSecret: process.env.LEMONSQUEEZY_WEBHOOK_SECRET ?? "",
+};
