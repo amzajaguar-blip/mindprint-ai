@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { registerStorageProxy } from "./storageProxy";
@@ -11,7 +11,7 @@ export function createApp() {
   const app = express();
 
   // Webhook PRIMA di express.json() — serve raw body per HMAC
-  app.post("/api/webhook/lemonsqueezy", express.raw({ type: "application/json" }), async (req, res) => {
+  app.post("/api/webhook/lemonsqueezy", express.raw({ type: "application/json" }), async (req: Request, res: Response) => {
     const signature = req.headers["x-signature"] as string;
     const rawBody = (req.body as Buffer).toString("utf-8");
 
