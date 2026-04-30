@@ -140,6 +140,21 @@ export async function updateUserProfile(userId: number, updates: Partial<InsertU
   await db.update(userProfiles).set({ ...updates, updatedAt: new Date() }).where(eq(userProfiles.userId, userId));
 }
 
+export async function incrementRewardCount(userId: number): Promise<number> {
+  const db = getDb();
+  if (!db) return 0;
+  const profile = await getUserProfile(userId);
+  const current = profile?.rewardCount ?? 0;
+  if (current >= 3) return 3;
+  const next = current + 1;
+  if (profile) {
+    await db.update(userProfiles).set({ rewardCount: next, updatedAt: new Date() }).where(eq(userProfiles.userId, userId));
+  } else {
+    await db.insert(userProfiles).values({ userId, rewardCount: next, isPublicProfile: 1, createdAt: new Date(), updatedAt: new Date() });
+  }
+  return next;
+}
+
 // ── Subscriptions ─────────────────────────────────────────────────────────────
 
 export async function getSubscriptionByUserId(userId: number) {

@@ -91,6 +91,7 @@ export const userProfiles = pgTable("userProfiles", {
   lastTestDate: timestamp("lastTestDate"),
   bio: text("bio"),
   isPublicProfile: integer("isPublicProfile").default(1),
+  rewardCount: integer("rewardCount").default(0).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });

@@ -18,6 +18,7 @@ import {
   getUserById,
   getSubscriptionByUserId,
   upsertSubscription,
+  incrementRewardCount,
 } from "./db";
 import { invokeLLM } from "./_core/llm";
 import { generateImage } from "./_core/imageGeneration";
@@ -152,12 +153,14 @@ I campi premium (strengthPoints, shadowZones, weeklyAdvice, premiumAnalysis) dev
 
         let imageUrl: string | undefined;
         try {
+          // Short prompt for submit-time generation: fast and reliable on Pollinations.
+          // Full V2 prompt is used by the on-demand "Genera immagine" button.
           const imageResult = await generateImage({
-            prompt: `Abstract digital art representing the emotional archetype "${archetypeData.name}". Cyberpunk style with neon colors (pink #FF006E, cyan #00D9FF, green #00FF88). Dark background. Emotional and introspective mood. High quality portrait format.`,
+            prompt: `${archetypeData.name}, Jungian archetype, sacred geometry, cosmic void, violet indigo energy, dark mystical portrait, ethereal atmosphere, tarot composition`,
           });
           imageUrl = imageResult.url;
         } catch (error) {
-          console.warn("[ImageGen] Failed to generate archetype image:", error);
+          console.error("[ImageGen] FAILED:", error instanceof Error ? error.message : error);
         }
 
         await updateTest(testId, {
@@ -237,7 +240,6 @@ I campi premium (strengthPoints, shadowZones, weeklyAdvice, premiumAnalysis) dev
 
     getUserCards: protectedProcedure.query(async ({ ctx }) => {
       const cards = await getUserMindprintCards(ctx.user.id);
-      // Attach test data to each card
       const withTests = await Promise.all(
         cards.map(async card => {
           const test = await getTestById(card.testId);
@@ -246,23 +248,51 @@ I campi premium (strengthPoints, shadowZones, weeklyAdvice, premiumAnalysis) dev
       );
       return withTests;
     }),
+
+    generateImage: protectedProcedure
+      .input(z.object({ testId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const test = await getTestById(input.testId);
+        if (!test || test.userId !== ctx.user.id) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Test non trovato" });
+        }
+        if (test.imageUrl) return { imageUrl: test.imageUrl };
+        const result = await generateImage({
+          prompt: `Masterpiece ultra-detailed sacred geometry (Metatron's Cube, Flower of Life) pulsating with bioluminescent violet and indigo energy. Central Jungian archetype silhouette "${test.archetypeName}" emerging from deep cosmic void. Intricate gold alchemical linework, ethereal smoke, stardust textures. Dark oracle aesthetic, tarot-inspired vertical composition, high contrast dramatic chiaroscuro lighting. 8k resolution, cinematic depth of field, mystical atmospheric glow, subtle scan-line overlay.`,
+        });
+        if (!result.url) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Generazione immagine fallita" });
+        await updateTest(input.testId, { imageUrl: result.url });
+        return { imageUrl: result.url };
+      }),
   }),
 
   subscription: router({
     checkStatus: protectedProcedure.query(async ({ ctx }) => {
-      const sub = await getSubscriptionByUserId(ctx.user.id);
+      const [sub, profile] = await Promise.all([
+        getSubscriptionByUserId(ctx.user.id),
+        getUserProfile(ctx.user.id),
+      ]);
       const isActive = sub?.status === "active" || sub?.status === "on_trial";
+      const rewardCount = profile?.rewardCount ?? 0;
+      const isRewardUnlocked = rewardCount >= 3;
       return {
-        isPremium: isActive,
+        isPremium: isActive || isRewardUnlocked,
+        isRewardUnlocked,
+        rewardCount,
         status: sub?.status ?? null,
         currentPeriodEnd: sub?.currentPeriodEnd ?? null,
       };
     }),
 
-    createCheckout: protectedProcedure.mutation(async ({ ctx }) => {
+    useReward: protectedProcedure.mutation(async ({ ctx }) => {
+      const newCount = await incrementRewardCount(ctx.user.id);
+      return { rewardCount: newCount, isRewardUnlocked: newCount >= 3 };
+    }),
+
+    createCheckout: protectedProcedure.input(z.object({ yearly: z.boolean().default(false) })).mutation(async ({ ctx, input }) => {
       const user = await getUserById(ctx.user.id);
       if (!user) throw new TRPCError({ code: "NOT_FOUND", message: "Utente non trovato" });
-      const checkoutUrl = await createCheckoutUrl(user.id, user.email ?? "");
+      const checkoutUrl = await createCheckoutUrl(user.id, user.email ?? "", input.yearly);
       return { checkoutUrl };
     }),
   }),

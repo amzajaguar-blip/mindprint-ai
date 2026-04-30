@@ -20,33 +20,13 @@ async function lsRequest(path: string, options: RequestInit = {}) {
   return res.json();
 }
 
-export async function createCheckoutUrl(userId: number, userEmail: string): Promise<string> {
-  const body = {
-    data: {
-      type: "checkouts",
-      attributes: {
-        checkout_options: { embed: false, media: true, logo: true },
-        checkout_data: {
-          email: userEmail,
-          custom: { user_id: String(userId) },
-        },
-        product_options: {
-          redirect_url: `${ENV.appUrl}/dashboard?premium=success`,
-          receipt_button_text: "Torna al tuo profilo",
-          receipt_thank_you_note: "Benvenuto nel club dei MindPrint Premium!",
-        },
-      },
-      relationships: {
-        store: { data: { type: "stores", id: ENV.lemonsqueezyStoreId } },
-        variant: { data: { type: "variants", id: ENV.lemonsqueezyVariantId } },
-      },
-    },
-  };
-
-  const data = await lsRequest("/checkouts", { method: "POST", body: JSON.stringify(body) });
-  const url = data?.data?.attributes?.url;
-  if (!url) throw new Error("Lemon Squeezy checkout: no URL returned");
-  return url;
+export async function createCheckoutUrl(userId: number, userEmail: string, yearly = false): Promise<string> {
+  const base = yearly ? ENV.lemonsqueezyCheckoutUrlYearly : ENV.lemonsqueezyCheckoutUrl;
+  if (!base) throw new Error("LEMONSQUEEZY_CHECKOUT_URL not configured");
+  const url = new URL(base);
+  url.searchParams.set("checkout[email]", userEmail);
+  url.searchParams.set("checkout[custom][user_id]", String(userId));
+  return url.toString();
 }
 
 export async function getLemonSubscription(subscriptionId: string) {
