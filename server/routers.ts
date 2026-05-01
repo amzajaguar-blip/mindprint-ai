@@ -82,18 +82,26 @@ export const appRouter = router({
           .join("\n");
 
         const llmResponse = await invokeLLM({
+          temperature: 1.5,
           messages: [
             {
               role: "system",
-              content: `Sei un esperto di psicologia archetipale con profonda conoscenza di Jung, Enneagramma e neuroscienze emotive.
-Analizza le risposte dell'utente al test Mirror Moment e genera un profilo psicologico personalizzato e accurato.
-IMPORTANTE: tutti i contenuti devono essere SPECIFICI alle risposte date, non generici.
-Usa un tono empatico, evocativo e preciso. La surprisePhrase deve sembrare che tu conosca l'utente profondamente.
-I campi premium (strengthPoints, shadowZones, weeklyAdvice, premiumAnalysis) devono essere concreti e azionabili.`,
+              content: `Sei un oracolo di psicologia archetipale junghiana. Il tuo compito è CREARE un archetipo UNICO, MAI VISTO PRIMA, che emerge ESCLUSIVAMENTE da queste specifiche risposte umane.
+
+REGOLE ASSOLUTE:
+1. Il NOME dell'archetipo deve essere INVENTATO da zero combinando le parole chiave emerse dalle risposte. VIETATO usare archetipi comuni (Eroe, Mago, Ribelle, Saggio, Ombra, Guerriero, Custode ecc). Il nome deve rispecchiare QUESTA persona specifica.
+2. OGNI frase deve contenere elementi CONCRETI presi dalle risposte date. Mai frasi generiche.
+3. La surprisePhrase deve essere una rivelazione che fa dire "come hai fatto a saperlo?" — deve sembrare che tu abbia letto l'anima di questa persona.
+4. rarityPercentage: calcola in modo REALISTICO basandoti sulla combinazione unica delle risposte. La maggior parte degli utenti sarà tra 3% e 25%.
+5. keyTraits: ESATTAMENTE 4 tratti, derivati LETTERALMENTE dal contenuto delle risposte.
+6. strengthPoints e shadowZones: usa PAROLE SPECIFICHE tratte dalle risposte.
+7. premiumAnalysis: 180-220 parole, deve menzione esplicitamente pattern emersi dalle risposte.
+
+Genera qualcosa di PROFONDAMENTE PERSONALE, non un template. Ogni utente deve sentire che questa analisi è stata scritta solo per lui.`,
             },
             {
               role: "user",
-              content: `Genera il profilo completo basandoti su queste risposte:\n\n${answerNarrative}`,
+              content: `Queste sono le mie risposte al Mirror Moment. Analizzale e crea il mio archetipo unico:\n\n${answerNarrative}\n\nRicorda: il nome dell'archetipo deve essere INVENTATO E UNICO, mai sentito prima.`,
             },
           ],
           response_format: {
@@ -104,17 +112,18 @@ I campi premium (strengthPoints, shadowZones, weeklyAdvice, premiumAnalysis) dev
               schema: {
                 type: "object",
                 properties: {
-                  name: { type: "string", description: "Nome poetico dell'archetipo in italiano (es. 'L'Esploratore Silenzioso')" },
-                  description: { type: "string", description: "Descrizione dell'archetipo in 2-3 frasi emozionali e personali" },
-                  keyTraits: { type: "array", items: { type: "string" }, description: "Esattamente 4 tratti chiave dell'archetipo" },
-                  surprisePhrase: { type: "string", description: "Una frase che sorprende l'utente sulla sua personalità — deve sembrare che tu lo conosca davvero" },
-                  rarityPercentage: { type: "number", description: "Percentuale di persone con questo archetipo (5-35, più basso = più raro)" },
-                  strengthPoints: { type: "array", items: { type: "string" }, description: "3-5 punti di forza specifici basati sulle risposte" },
-                  shadowZones: { type: "array", items: { type: "string" }, description: "3-5 zone d'ombra o aree di crescita, scritte con empatia non giudizio" },
-                  weeklyAdvice: { type: "array", items: { type: "string" }, description: "Esattamente 3 consigli pratici per questa settimana" },
-                  premiumAnalysis: { type: "string", description: "Analisi approfondita di 150-200 parole: come questo archetipo si manifesta in relazioni, lavoro e crescita personale" },
+                  name: { type: "string", description: "Nome poetico UNICO e INVENTATO dell'archetipo in italiano — mai generico, deve rispecchiare questa persona specifica" },
+                  description: { type: "string", description: "Descrizione in 2-3 frasi emozionali che contengono riferimenti CONCRETI alle risposte date" },
+                  keyTraits: { type: "array", items: { type: "string" }, description: "ESATTAMENTE 4 tratti chiave, derivati letteralmente dal contenuto delle risposte — non usare tratti generici" },
+                  surprisePhrase: { type: "string", description: "Una frase shock che rivela qualcosa che l'utente non ha detto esplicitamente ma emerge dalle risposte — deve far venire i brividi" },
+                  rarityPercentage: { type: "number", description: "Percentuale realistica di persone con questa esatta combinazione di tratti (1-40). Valori bassi per combinazioni molto specifiche." },
+                  strengthPoints: { type: "array", items: { type: "string" }, description: "3-5 punti di forza SPECIFICI — ogni punto deve fare riferimento a qualcosa emerso nelle risposte" },
+                  shadowZones: { type: "array", items: { type: "string" }, description: "3-5 zone d'ombra SPECIFICHE scritte con empatia — devono sembrare rivelazioni, non critiche" },
+                  weeklyAdvice: { type: "array", items: { type: "string" }, description: "Esattamente 3 consigli PRATICI e SPECIFICI per questa settimana, concreti e azionabili per QUESTA persona" },
+                  premiumAnalysis: { type: "string", description: "Analisi profonda di 180-220 parole che menziona pattern espliciti emersi dalle risposte. Deve sembrare scritta da un terapeuta che conosce questa persona da anni." },
+                  dominantColor: { type: "string", description: "Colore esadecimale (#RRGGBB) che rappresenta l'energia emotiva di questo archetipo — scegli in base al mood delle risposte (es. #7C3AED per mistero, #DC2626 per passione, #0EA5E9 per libertà, #10B981 per crescita, #F59E0B per calore)" },
                 },
-                required: ["name", "description", "keyTraits", "surprisePhrase", "rarityPercentage", "strengthPoints", "shadowZones", "weeklyAdvice", "premiumAnalysis"],
+                required: ["name", "description", "keyTraits", "surprisePhrase", "rarityPercentage", "strengthPoints", "shadowZones", "weeklyAdvice", "premiumAnalysis", "dominantColor"],
                 additionalProperties: false,
               },
             },
@@ -131,6 +140,7 @@ I campi premium (strengthPoints, shadowZones, weeklyAdvice, premiumAnalysis) dev
           shadowZones: string[];
           weeklyAdvice: string[];
           premiumAnalysis: string;
+          dominantColor?: string;
         };
 
         try {
@@ -153,10 +163,10 @@ I campi premium (strengthPoints, shadowZones, weeklyAdvice, premiumAnalysis) dev
 
         let imageUrl: string | undefined;
         try {
-          // Short prompt for submit-time generation: fast and reliable on Pollinations.
-          // Full V2 prompt is used by the on-demand "Genera immagine" button.
+          // Personalized image prompt derived from the specific archetype traits
+          const traitsStr = archetypeData.keyTraits.slice(0, 3).join(", ");
           const imageResult = await generateImage({
-            prompt: `${archetypeData.name}, Jungian archetype, sacred geometry, cosmic void, violet indigo energy, dark mystical portrait, ethereal atmosphere, tarot composition`,
+            prompt: `Jungian archetype "${archetypeData.name}" — ${traitsStr}. ${archetypeData.description.slice(0, 80)}. Sacred geometry Metatron Cube, dark cosmic void, unique symbolic figure, ethereal bioluminescent glow, tarot card vertical composition, cinematic mystical portrait`,
           });
           imageUrl = imageResult.url;
         } catch (error) {
