@@ -1,4 +1,6 @@
 import express, { Request, Response } from "express";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { registerStorageProxy } from "./storageProxy";
@@ -7,8 +9,56 @@ import { createContext } from "./context";
 import { verifyWebhookSignature } from "./lemonsqueezy";
 import { upsertSubscription } from "../db";
 
+// Rate limiters
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 min
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Troppe richieste. Riprova tra qualche minuto." },
+});
+
+const authLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 ora
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Troppi tentativi di accesso. Riprova tra un'ora." },
+});
+
+const aiLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 ora
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Limite analisi AI raggiunto. Riprova tra un'ora." },
+});
+
 export function createApp() {
   const app = express();
+
+  // Security headers
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "blob:", "https:", "https://image.pollinations.ai"],
+        connectSrc: ["'self'", "https://ooneediosycikzyuansl.supabase.co", "https://generativelanguage.googleapis.com"],
+        frameSrc: ["'none'"],
+        objectSrc: ["'none'"],
+      },
+    },
+    crossOriginEmbedderPolicy: false,
+  }));
+
+  // Apply rate limits
+  app.use("/api/trpc/subscription.useReward", aiLimiter);
+  app.use("/api/trpc/test.submit", aiLimiter);
+  app.use("/api/oauth", authLimiter);
+  app.use("/api", apiLimiter);
 
   // Webhook PRIMA di express.json() — serve raw body per HMAC
   app.post("/api/webhook/lemonsqueezy", express.raw({ type: "application/json" }), async (req: Request, res: Response) => {
@@ -51,8 +101,8 @@ export function createApp() {
     res.json({ received: true });
   });
 
-  app.use(express.json({ limit: "50mb" }));
-  app.use(express.urlencoded({ limit: "50mb", extended: true }));
+  app.use(express.json({ limit: "10mb" }));
+  app.use(express.urlencoded({ limit: "10mb", extended: true }));
   registerStorageProxy(app);
   registerOAuthRoutes(app);
   app.use("/api/trpc", createExpressMiddleware({ router: appRouter, createContext }));

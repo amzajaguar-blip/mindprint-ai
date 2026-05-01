@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
@@ -23,27 +23,32 @@ export default function Processing() {
   const [currentStep, setCurrentStep] = useState(0);
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [dots, setDots] = useState(1);
+  const [retryCount, setRetryCount] = useState(0);
+  const hasSubmitted = useRef(false); // guard anti double-submit / StrictMode
 
   const submitAnswers = trpc.test.submitAnswers.useMutation({
     onSuccess: (data) => {
       sessionStorage.setItem("lastTestId", String(data.testId));
       sessionStorage.setItem("lastShareToken", data.shareToken);
+      sessionStorage.removeItem("pendingTestData");
       setTimeout(() => setLocation("/mindprint-card"), 800);
     },
     onError: () => {
-      setLocation("/mirror-moment");
+      hasSubmitted.current = false; // allow retry
     },
   });
 
-  useEffect(() => {
+  const doSubmit = () => {
+    if (hasSubmitted.current) return;
     const raw = sessionStorage.getItem("pendingTestData");
     if (!raw) { setLocation("/mirror-moment"); return; }
-
     let parsed: { testId: number; answers: Record<string, string> };
     try { parsed = JSON.parse(raw); } catch { setLocation("/mirror-moment"); return; }
-
+    hasSubmitted.current = true;
     submitAnswers.mutate({ testId: parsed.testId, answers: parsed.answers });
-  }, []);
+  };
+
+  useEffect(() => { doSubmit(); }, []);
 
   useEffect(() => {
     const stepInterval = setInterval(() => {
@@ -218,11 +223,42 @@ export default function Processing() {
           ))}
         </div>
 
-        <p
-          className="text-gray-700 text-xs mt-12 font-mono"
-        >
-          ⟡ circa 20-40 secondi — non chiudere la pagina
-        </p>
+        {/* Error state with retry */}
+        {submitAnswers.isError && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mt-8 p-4 rounded-xl text-center"
+            style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}
+          >
+            <p className="text-red-400 text-sm mb-3">
+              {retryCount >= 2
+                ? "Analisi AI temporaneamente non disponibile. Riprova tra qualche minuto."
+                : "Si è verificato un errore. L'AI sta recuperando..."}
+            </p>
+            <div className="flex gap-3 justify-center">
+              <button
+                onClick={() => { setRetryCount(r => r + 1); doSubmit(); }}
+                className="px-4 py-2 text-sm rounded-lg text-white font-medium"
+                style={{ background: "linear-gradient(135deg, #8B5CF6, #C084FC)" }}
+              >
+                Riprova
+              </button>
+              <button
+                onClick={() => setLocation("/mirror-moment")}
+                className="px-4 py-2 text-sm rounded-lg border border-[#8B5CF6]/30 text-[#8B5CF6]"
+              >
+                Torna al test
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {!submitAnswers.isError && (
+          <p className="text-gray-700 text-xs mt-12 font-mono">
+            ⟡ circa 20-40 secondi — non chiudere la pagina
+          </p>
+        )}
       </motion.div>
     </div>
   );

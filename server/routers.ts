@@ -295,6 +295,13 @@ Genera qualcosa di PROFONDAMENTE PERSONALE, non un template. Ogni utente deve se
     }),
 
     useReward: protectedProcedure.mutation(async ({ ctx }) => {
+      // Server-side guard: check current state before incrementing
+      const profile = await getUserProfile(ctx.user.id);
+      const current = profile?.rewardCount ?? 0;
+      if (current >= 3) {
+        // Idempotent: already at cap, return current state without incrementing
+        return { rewardCount: 3, isRewardUnlocked: true };
+      }
       const newCount = await incrementRewardCount(ctx.user.id);
       return { rewardCount: newCount, isRewardUnlocked: newCount >= 3 };
     }),

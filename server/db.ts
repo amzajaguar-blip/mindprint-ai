@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, sql, lt, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import {
@@ -143,16 +143,32 @@ export async function updateUserProfile(userId: number, updates: Partial<InsertU
 export async function incrementRewardCount(userId: number): Promise<number> {
   const db = getDb();
   if (!db) return 0;
+
+  // Atomic single-query increment — eliminates TOCTOU race condition.
+  // LEAST() caps at 3; WHERE rewardCount < 3 prevents over-increment.
+  const updated = await db
+    .update(userProfiles)
+    .set({
+      rewardCount: sql`LEAST(${userProfiles.rewardCount} + 1, 3)`,
+      updatedAt: new Date(),
+    })
+    .where(and(eq(userProfiles.userId, userId), lt(userProfiles.rewardCount, 3)))
+    .returning({ rewardCount: userProfiles.rewardCount });
+
+  if (updated.length > 0) return updated[0].rewardCount;
+
+  // Row doesn't exist yet — insert with count=1
   const profile = await getUserProfile(userId);
-  const current = profile?.rewardCount ?? 0;
-  if (current >= 3) return 3;
-  const next = current + 1;
-  if (profile) {
-    await db.update(userProfiles).set({ rewardCount: next, updatedAt: new Date() }).where(eq(userProfiles.userId, userId));
-  } else {
-    await db.insert(userProfiles).values({ userId, rewardCount: next, isPublicProfile: 1, createdAt: new Date(), updatedAt: new Date() });
+  if (!profile) {
+    await db.insert(userProfiles).values({
+      userId, rewardCount: 1, isPublicProfile: 1,
+      createdAt: new Date(), updatedAt: new Date(),
+    });
+    return 1;
   }
-  return next;
+
+  // Already at cap (3) — row exists but WHERE blocked the update
+  return profile.rewardCount;
 }
 
 // ── Subscriptions ─────────────────────────────────────────────────────────────
