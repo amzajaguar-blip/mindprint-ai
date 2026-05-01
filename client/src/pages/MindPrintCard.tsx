@@ -62,11 +62,12 @@ export default function MindPrintCard() {
   };
 
   const handleShare = (platform: string) => {
-    const text = `Ho scoperto il mio archetipo: ${test?.archetypeName}. "${test?.surprisePhrase}" Scopri il tuo su MindPrint 🧠✨`;
+    const text = `Ho scoperto il mio archetipo: ${test?.archetypeName}. "${test?.surprisePhrase}" Scopri il tuo archetipo junghiano su MindPrint 🧠✨`;
     const urls: Record<string, string> = {
       twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`,
       whatsapp: `https://wa.me/?text=${encodeURIComponent(text + " " + shareUrl)}`,
       linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
+      telegram: `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(text)}`,
     };
     if (urls[platform]) window.open(urls[platform], "_blank", "width=600,height=400");
     setShowShareMenu(false);
@@ -255,9 +256,13 @@ export default function MindPrintCard() {
                       transition={{ duration: 0.15 }}
                       className="absolute top-full left-0 right-0 mt-2 bg-[#0F0B1A] border border-gray-800 rounded-xl p-3 space-y-1 z-20"
                     >
+                      <p className="text-[10px] text-center text-gray-600 pb-1 border-b border-gray-800 mb-1">
+                        Condividi e sblocca reward &rarr;
+                      </p>
                       {[
                         { id: "twitter", label: "Twitter / X", color: "#1DA1F2" },
                         { id: "whatsapp", label: "WhatsApp", color: "#25D366" },
+                        { id: "telegram", label: "Telegram", color: "#0088CC" },
                         { id: "linkedin", label: "LinkedIn", color: "#0A66C2" },
                       ].map(p => (
                         <button key={p.id} onClick={() => handleShare(p.id)}

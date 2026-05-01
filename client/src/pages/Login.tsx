@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { supabase } from "@/lib/supabase";
+import { supabase, isSupabaseAvailable } from "@/lib/supabase";
 import { Sparkles } from "lucide-react";
 
 type Step = "email" | "otp";
@@ -27,7 +27,12 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
+    if (!isSupabaseAvailable()) {
+      setError("Servizio di autenticazione non disponibile. Riprova più tardi.");
+      setLoading(false);
+      return;
+    }
+    const { error } = await supabase!.auth.signInWithOtp({ email, options: { shouldCreateUser: true } });
     setLoading(false);
     if (error) { setError(error.message); return; }
     setStep("otp");
@@ -37,7 +42,12 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     setError("");
-    const { data, error } = await supabase.auth.verifyOtp({ email, token: otp, type: "email" });
+    if (!isSupabaseAvailable()) {
+      setError("Servizio di autenticazione non disponibile. Riprova più tardi.");
+      setLoading(false);
+      return;
+    }
+    const { data, error } = await supabase!.auth.verifyOtp({ email, token: otp, type: "email" });
     if (error || !data.session) {
       setLoading(false);
       setError(error?.message ?? "Codice non valido");
@@ -51,7 +61,12 @@ export default function Login() {
   const loginWithGoogle = async () => {
     setGoogleLoading(true);
     setError("");
-    const { error } = await supabase.auth.signInWithOAuth({
+    if (!isSupabaseAvailable()) {
+      setError("Servizio di autenticazione non disponibile. Riprova più tardi.");
+      setGoogleLoading(false);
+      return;
+    }
+    const { error } = await supabase!.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
@@ -66,9 +81,9 @@ export default function Login() {
       <div className="relative z-10 w-full max-w-sm">
         <div className="text-center mb-8">
           <img src="/logos/logo-icon.png" alt="MindPrint" className="h-12 w-12 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-white">Accedi a MindPrint</h1>
+          <h1 className="text-2xl font-bold text-white">Scopri il tuo archetipo</h1>
           <p className="text-gray-500 text-sm mt-1">
-            {step === "email" ? "Scegli come vuoi accedere" : `Codice inviato a ${email}`}
+            {step === "email" ? "Accedi in 10 secondi. Nessuna password." : `Codice inviato a ${email}`}
           </p>
         </div>
 
@@ -162,6 +177,10 @@ export default function Login() {
             </form>
           )}
         </div>
+
+        <p className="text-center text-gray-700 text-xs mt-6" style={{ fontFamily: "EB Garamond, serif" }}>
+          🔒 Dati crittografati · Mai condivisi con terzi · Cancellabili in qualsiasi momento
+        </p>
       </div>
     </div>
   );

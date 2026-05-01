@@ -1,4 +1,11 @@
 .env
+.env.production
+.env.local
+.env.*.local
 node_modules/
 dist/
 *.local
+.vercel
+.env*.local
+.manus-logs/
+android/

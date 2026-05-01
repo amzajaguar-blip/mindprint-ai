@@ -44,6 +44,18 @@ export default function Privacy() {
       </nav>
 
       <div className="relative z-10 max-w-2xl mx-auto px-6 py-16">
+        {/* BreadcrumbList Schema */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://mindprint.it/" },
+              { "@type": "ListItem", "position": 2, "name": "Privacy Policy", "item": "https://mindprint.it/privacy" }
+            ]
+          })}
+        </script>
+
         <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="mb-14">
           <p className="text-[10px] uppercase tracking-[0.45em] mb-4 font-mono" style={{ color: "#8B5CF6" }}>
             Informativa legale

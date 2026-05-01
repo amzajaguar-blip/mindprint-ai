@@ -265,7 +265,7 @@ export default function Plan() {
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         >
           <p className="text-[#8B5CF6] text-[10px] uppercase tracking-[0.45em] mb-5 font-mono">
-            Piano &amp; Prezzi
+            Premium · Prezzi
           </p>
           <h1
             className="leading-tight mb-5"
@@ -282,14 +282,14 @@ export default function Plan() {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              Il valore di anni di terapia.
+              Analisi AI illimitata.
             </span>
           </h1>
           <p
             className="text-gray-500 text-[1.1rem] max-w-md mx-auto leading-relaxed"
             style={{ fontFamily: "Cormorant Garamond, serif" }}
           >
-            Scegli il percorso che fa per te. Sempre annullabile, mai vincolante.
+            Sblocca test illimitati, analisi psicologica profonda AI Gemini e la tua immagine archetipale esclusiva. Annullabile sempre.
           </p>
         </motion.div>
 
@@ -726,6 +726,22 @@ export default function Plan() {
           transition={{ duration: 0.6 }}
           className="mb-16"
         >
+          {/* FAQ Schema JSON-LD */}
+          <script type="application/ld+json">
+            {JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              "mainEntity": FAQ_ITEMS.map(item => ({
+                "@type": "Question",
+                "name": item.q,
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": item.a
+                }
+              }))
+            })}
+          </script>
+
           <h2
             className="text-center text-xl font-semibold mb-8 text-white/70"
             style={{ fontFamily: "Cinzel, serif" }}
@@ -749,7 +765,7 @@ export default function Plan() {
 
         {/* ── FOOTER NOTE ── */}
         <motion.p
-          className="text-center text-gray-700 text-xs"
+          className="text-center text-gray-700 text-xs pb-16 md:pb-0"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.7, duration: 0.5 }}
@@ -758,6 +774,32 @@ export default function Plan() {
           Pagamento sicuro tramite LemonSqueezy &middot; Nessun vincolo &middot; Disdici in qualsiasi momento
         </motion.p>
       </div>
+
+      {/* ── Sticky mobile CTA bar ── */}
+      {!isPremium && (
+        <div
+          className="fixed bottom-0 left-0 right-0 z-50 md:hidden p-4 backdrop-blur-xl border-t border-[#8B5CF6]/20"
+          style={{ background: "rgba(8,8,15,0.95)" }}
+        >
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={() => checkout.mutate({ yearly })}
+            disabled={checkout.isPending}
+            className="w-full py-3.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-60"
+            style={{
+              background: "linear-gradient(135deg, #7C3AED, #8B5CF6, #C084FC)",
+              boxShadow: "0 0 40px rgba(139,92,246,0.4)",
+              fontFamily: "Cinzel, serif",
+            }}
+          >
+            {checkout.isPending
+              ? "Caricamento..."
+              : yearly
+              ? `Premium Annuale — ${yearlyPrice}`
+              : `Premium Mensile — ${monthlyPrice}/mese`}
+          </motion.button>
+        </div>
+      )}
     </div>
   );
 }

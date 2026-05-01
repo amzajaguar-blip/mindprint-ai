@@ -1,0 +1,8 @@
+# MindPrint — robots.txt
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /auth/callback
+
+# Sitemap
+Sitemap: https://mindprint.it/sitemap.xml

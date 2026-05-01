@@ -1,7 +1,8 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
+  "buildCommand": "pnpm build",
   "outputDirectory": "dist/public",
+  "installCommand": "pnpm install",
   "functions": {
     "api/index.ts": {
       "memory": 1024,

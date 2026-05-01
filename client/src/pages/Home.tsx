@@ -301,8 +301,8 @@ export default function Home() {
       {/* ────────────────────── NAVBAR ────────────────────── */}
       <nav className="relative z-20 border-b border-[#8B5CF6]/10 px-6 py-4 flex items-center justify-between backdrop-blur-sm">
         <div className="flex items-center gap-3">
-          <img src="/logos/logo-icon.png" alt="" className="h-8 w-8" />
-          <img src="/logos/logo-text.png" alt="MindPrint+AI" className="h-6 w-auto hidden sm:block" />
+          <img src="/logos/logo-icon.png" alt="MindPrint" className="h-8 w-8" loading="eager" />
+          <img src="/logos/logo-text.png" alt="MindPrint — Test Personalità AI" className="h-6 w-auto hidden sm:block" loading="eager" />
         </div>
         <div className="flex items-center gap-4">
           {isAuthenticated ? (
@@ -344,10 +344,10 @@ export default function Home() {
               transition={{ duration: 0.5 }}
               className="text-[#8B5CF6] text-[10px] uppercase tracking-[0.5em] mb-8 font-mono"
             >
-              Psicologia Archetipale · AI
+              Test Personalità AI · Psicologia Junghiana
             </motion.p>
 
-            {/* Headline asimmetrica */}
+            {/* Headline asimmetrica — SEO ottimizzata */}
             <motion.h1
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
@@ -370,7 +370,7 @@ export default function Home() {
               </span>
               <span className="block text-[clamp(1.5rem,3.5vw,2.2rem)] font-light text-white/40 mt-2 tracking-wide italic"
                 style={{ fontFamily: "Cormorant Garamond, serif" }}>
-                La tua ti aspetta da sempre.
+                Scopri il tuo archetipo junghiano unico.
               </span>
             </motion.h1>
 
@@ -382,9 +382,10 @@ export default function Home() {
               style={{ fontFamily: "Cormorant Garamond, serif" }}
             >
               Non un oroscopo. Non un test di personalità generico.
-              MindPrint usa psicologia junghiana e intelligenza artificiale
-              per rivelare il tuo archetipo profondo in{" "}
+              MindPrint usa la psicologia archetipale di Carl Jung e l&apos;intelligenza artificiale
+              per rivelare il tuo archetipo psicologico profondo in{" "}
               <span className="text-white/70 italic">90 secondi</span>.
+              <br /><span className="text-gray-600 text-[0.95rem]">48 archetipi unici. Analisi AI Gemini. Gratuito.</span>
             </motion.p>
 
             <motion.div
@@ -415,7 +416,7 @@ export default function Home() {
                   animate={{ backgroundPosition: ["200% 0", "-200% 0"] }}
                   transition={{ duration: 2.8, repeat: Infinity, ease: "linear", repeatDelay: 1.2 }}
                 />
-                Scopri il tuo archetipo
+                Scopri il tuo archetipo junghiano
               </motion.button>
               <a
                 href="#come-funziona"
@@ -513,14 +514,14 @@ export default function Home() {
           transition={{ duration: 0.7 }}
           className="mb-20"
         >
-          <p className="text-[#8B5CF6] text-[10px] uppercase tracking-[0.5em] mb-5 font-mono">Il processo</p>
+          <p className="text-[#8B5CF6] text-[10px] uppercase tracking-[0.5em] mb-5 font-mono">Come funziona il test</p>
           <h2
             className="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight max-w-xl"
             style={{ fontFamily: "Cinzel, serif" }}
           >
-            Tre minuti.<br />
+            Test archetipo in 3 passi.<br />
             <span className="font-light italic text-white/40" style={{ fontFamily: "Cormorant Garamond, serif" }}>
-              Una rivelazione.
+              Una rivelazione che dura per sempre.
             </span>
           </h2>
         </motion.div>
@@ -661,15 +662,15 @@ export default function Home() {
             transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
           >
             <p className="text-[#8B5CF6] text-[10px] uppercase tracking-[0.5em] mb-5 font-mono">
-              Perché è diverso
+              Perché è diverso dagli altri test
             </p>
             <h2
               className="text-[clamp(1.8rem,4vw,2.8rem)] font-bold mb-10 leading-tight"
               style={{ fontFamily: "Cinzel, serif" }}
             >
-              Precisione identitaria,<br />
+              Psicologia junghiana + AI,<br />
               <span className="font-light italic text-white/50" style={{ fontFamily: "Cormorant Garamond, serif" }}>
-                non oroscopo.
+                non un oroscopo generico.
               </span>
             </h2>
 
@@ -883,7 +884,7 @@ export default function Home() {
           className="relative z-10 max-w-2xl mx-auto text-center"
         >
           <p className="text-[#8B5CF6] text-[10px] uppercase tracking-[0.5em] mb-8 font-mono">
-            Il momento è adesso
+            Inizia il test gratuito
           </p>
 
           <h2
@@ -891,7 +892,7 @@ export default function Home() {
             style={{ fontFamily: "Cinzel, serif" }}
           >
             <span className="block text-[clamp(2.2rem,5.5vw,4rem)] font-normal text-white/90">
-              Sei pronto a
+              Scopri il tuo
             </span>
             <span
               className="block text-[clamp(2.8rem,7vw,5.5rem)] font-bold"
@@ -901,7 +902,7 @@ export default function Home() {
                 WebkitTextFillColor: "transparent",
               }}
             >
-              incontrarti?
+              archetipo junghiano
             </span>
           </h2>
 
@@ -909,7 +910,7 @@ export default function Home() {
             className="text-gray-500 text-[1.1rem] mb-4 leading-relaxed"
             style={{ fontFamily: "Cormorant Garamond, serif" }}
           >
-            Il test dura 90 secondi. Nessuna carta di credito richiesta.
+            Test di personalità AI gratuito. 7 domande, 90 secondi. Nessuna carta di credito.
           </p>
 
           {/* Live counter badge */}
@@ -946,7 +947,7 @@ export default function Home() {
                 letterSpacing: "0.05em",
               }}
             >
-              Inizia il Mirror Moment &rarr;
+              Scopri il tuo archetipo &rarr;
             </motion.button>
           </div>
         </motion.div>

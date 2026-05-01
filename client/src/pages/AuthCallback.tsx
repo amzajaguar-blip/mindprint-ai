@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { supabase } from "@/lib/supabase";
+import { supabase, isSupabaseAvailable } from "@/lib/supabase";
 
 export default function AuthCallback() {
   const [, navigate] = useLocation();
@@ -8,7 +8,13 @@ export default function AuthCallback() {
 
   useEffect(() => {
     const handle = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
+      if (!isSupabaseAvailable()) {
+        setStatus("Servizio di autenticazione non disponibile. Riprova più tardi.");
+        setTimeout(() => navigate("/login"), 3000);
+        return;
+      }
+
+      const { data: { session }, error } = await supabase!.auth.getSession();
 
       if (error || !session) {
         setStatus("Errore durante l'accesso. Riprova.");
